@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.util.Log;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -129,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void connectTwitter() {
+        Log.w("FeelingMe", "connectTwitter");
         TwitterConfig config = new TwitterConfig.Builder(this)
                 .twitterAuthConfig(new TwitterAuthConfig(TWITTER_KEY, SECRET))
                 .debug(true)
@@ -144,16 +146,18 @@ public class MainActivity extends AppCompatActivity {
 
         if (session == null) {
             //if user is not authenticated start authenticating
+            Log.w("FeelingMe", "session is null. Request authorize ...");
             client.authorize(this, new com.twitter.sdk.android.core.Callback<TwitterSession>() {
                 @Override
                 public void success(Result<TwitterSession> result) {
-
+                    Log.w("FeelingMe", "onauthorize success ...");
                     TwitterSession twitterSession = result.data;
                     getLastTweetMessage(twitterSession);
                 }
 
                 @Override
                 public void failure(TwitterException e) {
+                    Log.w("FeelingMe", "onauthorize failure ...");
                     // Do something on failure
                 }
             });
@@ -164,12 +168,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getLastTweetMessage(TwitterSession session) {
+        Log.w("FeelingMe", "getLastTweetMessage ...");
         TwitterApiClient twitterApiClient = TwitterCore.getInstance().getApiClient();
         Call<List<Tweet>> call = twitterApiClient.getStatusesService().userTimeline( session.getUserId(), null, 1, null, null, true, true, true, false);
         call.enqueue(new com.twitter.sdk.android.core.Callback<List<Tweet>>() {
             @Override
             public void success(Result<List<Tweet>> result) {
                 //Do something with result
+                Log.w("FeelingMe", "onuserTimeline success ...");
                 if (!result.data.isEmpty()) {
                     Tweet tweet = result.data.get(0);
                 }
@@ -177,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void failure(TwitterException exception) {
                 //Do something on failure
+                Log.w("FeelingMe", "onuserTimeline failure ...");
             }
         });
     }
