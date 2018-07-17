@@ -3,6 +3,7 @@ package com.tr.feelingme;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.Animation;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "yourcustomprotocol://callback";
 
     private SpotifyApi spotifyApi;
+    private TweetsPagerAdapter tweetsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,10 @@ public class MainActivity extends AppCompatActivity {
                         // Hide the nav bar and status bar
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
+
+        tweetsAdapter = new TweetsPagerAdapter(this);
+        ViewPager pager = (ViewPager)findViewById(R.id.pager);
+        pager.setAdapter(tweetsAdapter);
 
         showBusy(true);
         showPlayButton(true);
@@ -67,6 +73,10 @@ public class MainActivity extends AppCompatActivity {
             }
             showBusy(false);
 
+            tweetsAdapter.setTweets(new String[] {
+                    "Just between us, I have a teleportation stargate to the Andromeda galaxy. It’s amazing",
+                    "Men, we can no longer avert our eyes from what is deeply broken in ourselves and in others, writes Mark Greene. We can no longer cater to our discomfort, avoiding at all costs the challenging conversations required of us."
+            });
         }
     }
 
@@ -76,12 +86,15 @@ public class MainActivity extends AppCompatActivity {
 
         showPlayButton(false);
 
+        ViewPager pager = (ViewPager)findViewById(R.id.pager);
+        String tweet = tweetsAdapter.getTweets()[pager.getCurrentItem()];
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://9u0w997c35.execute-api.us-east-1.amazonaws.com/dev/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         FeelingMe feelingMe = retrofit.create(FeelingMe.class);
-        feelingMe.search("Men, we can no longer avert our eyes from what is deeply broken in ourselves and in others, writes Mark Greene. We can no longer cater to our discomfort, avoiding at all costs the challenging conversations required of us.")
+        feelingMe.search(tweet)
                 .enqueue(new retrofit2.Callback<List<List<String>>>() {
                     @Override
                     public void onResponse(Call<List<List<String>>> call,
