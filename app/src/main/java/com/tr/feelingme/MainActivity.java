@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.animation.Animation;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -36,7 +37,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE
+                        // Set the content to appear under the system bars so that the
+                        // content doesn't resize when the system bars hide and show.
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        // Hide the nav bar and status bar
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
+
         showBusy(true);
+        showPlayButton(true);
 
         connectSpotify();
     }
@@ -52,12 +66,15 @@ public class MainActivity extends AppCompatActivity {
                 spotifyApi.setAccessToken(response.getAccessToken());
             }
             showBusy(false);
+
         }
     }
 
     public void onPlay(View view) {
         if (spotifyApi == null)
             return;
+
+        showPlayButton(false);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://9u0w997c35.execute-api.us-east-1.amazonaws.com/dev/")
@@ -86,10 +103,13 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                         }
+
+                        showPlayButton(true);
                     }
 
                     @Override
                     public void onFailure(Call<List<List<String>>> call, Throwable t) {
+                        showPlayButton(true);
                     }
                 });
     }
@@ -105,5 +125,23 @@ public class MainActivity extends AppCompatActivity {
     private void showBusy(boolean isBusy) {
         View busyView = findViewById(R.id.busyIndicator);
         busyView.setVisibility(isBusy ? View.VISIBLE : View.GONE);
+    }
+
+    private void showPlayButton(boolean isVisible) {
+        if (isVisible) {
+            float dp = getResources().getDisplayMetrics().density;
+            View button = findViewById(R.id.playButton);
+            ResizeAnimation resizeAnimation = new ResizeAnimation(
+                    button,
+                    (int)(10 * dp),
+                    (int)(128 * dp)
+            );
+            resizeAnimation.setDuration(1000);
+            resizeAnimation.setRepeatCount(Animation.INFINITE);
+            button.startAnimation(resizeAnimation);
+        } else {
+            View button = findViewById(R.id.playButton);
+            button.clearAnimation();
+        }
     }
 }
