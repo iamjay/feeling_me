@@ -22,14 +22,30 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.Twitter;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterConfig;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterAuthClient;
+import com.twitter.sdk.android.core.identity.TwitterLoginButton;
+import com.twitter.sdk.android.core.TwitterApiClient;
+import com.twitter.sdk.android.core.TwitterCore;
+import com.twitter.sdk.android.core.models.Tweet;
+
 import static com.spotify.sdk.android.authentication.LoginActivity.REQUEST_CODE;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String CLIENT_ID = "01005ab3eacb4b5a9644497c043f4d24";
     private static final String REDIRECT_URI = "yourcustomprotocol://callback";
+    private static final String TWITTER_KEY = "vfex6InKBJhKu7wf38gKriV2q";
+    private static final String SECRET = "rVlfIGZf8d08G47BpJlfM3a4wM7Ot9UE68dY2bDRM3MvKPVJSQ";
 
     private SpotifyApi spotifyApi;
+    private TwitterLoginButton twitterLoginButton;
+    private TwitterAuthClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
         showBusy(true);
 
-        connectSpotify();
+        connectTwitter();
+//        connectSpotify();
     }
 
     @Override
@@ -52,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
                 spotifyApi.setAccessToken(response.getAccessToken());
             }
             showBusy(false);
+        } else {
+            twitterLoginButton.onActivityResult(requestCode, resultCode, intent);
         }
     }
 
@@ -105,5 +124,54 @@ public class MainActivity extends AppCompatActivity {
     private void showBusy(boolean isBusy) {
         View busyView = findViewById(R.id.busyIndicator);
         busyView.setVisibility(isBusy ? View.VISIBLE : View.GONE);
+    }
+
+    private void connectTwitter() {
+        TwitterConfig config = new TwitterConfig.Builder(this)
+                .twitterAuthConfig(new TwitterAuthConfig(TWITTER_KEY, SECRET))
+                .debug(true)
+                .build();
+        Twitter.initialize(config);
+
+        client = new TwitterAuthClient();
+        TwitterSession session = TwitterCore.getInstance().getSessionManager().getActiveSession();
+
+        if (session == null) {
+            //if user is not authenticated start authenticating
+            client.authorize(this, new com.twitter.sdk.android.core.Callback<TwitterSession>() {
+                @Override
+                public void success(Result<TwitterSession> result) {
+
+                    TwitterSession twitterSession = result.data;
+                    getLastTweetMessage(twitterSession);
+                }
+
+                @Override
+                public void failure(TwitterException e) {
+                    // Do something on failure
+                }
+            });
+        } else {
+            // already authenticated
+            getLastTweetMessage(session);
+        }
+    }
+
+    private void getLastTweetMessage(TwitterSession session) {
+        TwitterApiClient twitterApiClient = TwitterCore.getInstance().getApiClient();
+        Call<List<Tweet>> call = twitterApiClient.getStatusesService().userTimeline( session.getUserId(), null, 1, null, null, true, true, true, false);
+        call.enqueue(new com.twitter.sdk.android.core.Callback<List<Tweet>>() {
+            @Override
+            public void success(Result<List<Tweet>> result) {
+                //Do something with result
+                if (!result.data.isEmpty()) {
+                    Tweet tweet = result.data.get(0);
+                }
+            }
+
+            public void failure(TwitterException exception) {
+                //Do something on failure
+            }
+        });
     }
 }
