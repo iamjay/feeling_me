@@ -34,4 +34,6 @@ dependencies {
     compile 'com.twitter.sdk.android:twitter:3.1.1'
     compile 'com.spotify.android:auth:1.0.0-alpha'
     compile 'com.spotify.sdk:spotify-player-24-noconnect-2.20b@aar'
+    compile 'com.github.kaaes:spotify-web-api-android:0.4.1'
+    compile 'com.squareup.retrofit2:retrofit:2.4.0'
 }
