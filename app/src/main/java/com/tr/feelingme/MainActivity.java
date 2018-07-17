@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String SECRET = "rVlfIGZf8d08G47BpJlfM3a4wM7Ot9UE68dY2bDRM3MvKPVJSQ";
 
     private SpotifyApi spotifyApi;
-    private TwitterLoginButton twitterLoginButton;
     private TwitterAuthClient client;
+    private TwitterLoginButton twitterLoginButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         showBusy(true);
 
         connectTwitter();
-//        connectSpotify();
+        connectSpotify();
     }
 
     @Override
@@ -70,7 +70,9 @@ public class MainActivity extends AppCompatActivity {
             }
             showBusy(false);
         } else {
-            twitterLoginButton.onActivityResult(requestCode, resultCode, intent);
+            if (client != null) {
+                client.onActivityResult(requestCode, resultCode, intent);
+            }
         }
     }
 
@@ -133,7 +135,11 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         Twitter.initialize(config);
 
+        twitterLoginButton = (TwitterLoginButton)findViewById(R.id.twitter_login_button);
+        twitterLoginButton.setEnabled(true);
         client = new TwitterAuthClient();
+
+
         TwitterSession session = TwitterCore.getInstance().getSessionManager().getActiveSession();
 
         if (session == null) {
