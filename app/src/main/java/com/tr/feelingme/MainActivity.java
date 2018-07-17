@@ -128,8 +128,8 @@ public class MainActivity extends AppCompatActivity {
                                            retrofit2.Response<List<List<String>>> response) {
                         List<List<String>> result = response.body();
 
-                        if (result.size() > 0 && result.get(0) != null
-                                && result.get(0).size() > 0 && result.get(0).get(1) != null) {
+                        if (result != null && result.size() > 0 && result.get(0) != null
+                                && result.get(0).size() > 1 && result.get(0).get(1) != null) {
                             SpotifyService spotify = spotifyApi.getService();
                             spotify.searchPlaylists(result.get(0).get(1), new Callback<PlaylistsPager>() {
                                 @Override
