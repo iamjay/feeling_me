@@ -62,10 +62,10 @@ public class MainActivity extends AppCompatActivity {
                         // Set the content to appear under the system bars so that the
                         // content doesn't resize when the system bars hide and show.
                         | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        //| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         // Hide the nav bar and status bar
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        //| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
 
         tweetsAdapter = new TweetsPagerAdapter(this);
@@ -109,6 +109,10 @@ public class MainActivity extends AppCompatActivity {
 
         showPlayButton(false);
 
+        Toast.makeText(MainActivity.this,
+                "Searching",
+                Toast.LENGTH_SHORT).show();
+
         ViewPager pager = (ViewPager)findViewById(R.id.pager);
         String tweet = tweetsAdapter.getTweets()[pager.getCurrentItem()];
 
@@ -124,7 +128,8 @@ public class MainActivity extends AppCompatActivity {
                                            retrofit2.Response<List<List<String>>> response) {
                         List<List<String>> result = response.body();
 
-                        if (result.size() > 0) {
+                        if (result.size() > 0 && result.get(0) != null
+                                && result.get(0).size() > 0 && result.get(0).get(1) != null) {
                             SpotifyService spotify = spotifyApi.getService();
                             spotify.searchPlaylists(result.get(0).get(1), new Callback<PlaylistsPager>() {
                                 @Override
@@ -144,6 +149,10 @@ public class MainActivity extends AppCompatActivity {
                                 public void failure(RetrofitError error) {
                                 }
                             });
+                        } else {
+                            Toast.makeText(MainActivity.this,
+                                    "No playlist found",
+                                    Toast.LENGTH_LONG).show();
                         }
 
                         showPlayButton(true);
@@ -182,8 +191,8 @@ public class MainActivity extends AppCompatActivity {
             resizeAnimation.setRepeatCount(Animation.INFINITE);
             button.startAnimation(resizeAnimation);
         } else {
-            View button = findViewById(R.id.playButton);
-            button.clearAnimation();
+            // View button = findViewById(R.id.playButton);
+            // button.clearAnimation();
         }
     }
 
