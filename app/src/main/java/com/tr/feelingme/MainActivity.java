@@ -7,6 +7,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.Animation;
+import android.widget.Toast;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -75,7 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
             tweetsAdapter.setTweets(new String[] {
                     "Just between us, I have a teleportation stargate to the Andromeda galaxy. It’s amazing",
-                    "Men, we can no longer avert our eyes from what is deeply broken in ourselves and in others, writes Mark Greene. We can no longer cater to our discomfort, avoiding at all costs the challenging conversations required of us."
+                    "Men, we can no longer avert our eyes from what is deeply broken in ourselves and in others, writes Mark Greene. We can no longer cater to our discomfort, avoiding at all costs the challenging conversations required of us.",
+                    "Capturing the WorldCupFinal Reuters photographer KPfaffenbach captures a heavy downpour as FIFA president Infantino is joined by Putin, Macron and Grabar-Kitarovic during the presentation"
             });
         }
     }
@@ -106,9 +108,15 @@ public class MainActivity extends AppCompatActivity {
                             spotify.searchPlaylists(result.get(0).get(1), new Callback<PlaylistsPager>() {
                                 @Override
                                 public void success(PlaylistsPager playlistsPager, Response response) {
-                                    String uri = playlistsPager.playlists.items.get(0).uri;
-                                    Intent launcher = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                                    startActivity(launcher);
+                                    if (playlistsPager.playlists.items.size() > 0) {
+                                        String uri = playlistsPager.playlists.items.get(0).uri;
+                                        Intent launcher = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                                        startActivity(launcher);
+                                    } else {
+                                        Toast.makeText(MainActivity.this,
+                                                "No playlist found",
+                                                Toast.LENGTH_LONG).show();
+                                    }
                                 }
 
                                 @Override
